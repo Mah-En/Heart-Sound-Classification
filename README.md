@@ -36,14 +36,14 @@ Understanding the raw audio data's characteristics is vital for effective prepro
 
 This histogram shows the varying lengths of the heart sound recordings. Most recordings are relatively short, but some extend beyond 20 seconds.
 
-![Distribution of Audio Durations](images/output-3.png)
+![Distribution of Audio Durations](figures/output-3.png)
 *Figure 1: Distribution of Audio Durations*
 
 #### Distribution of Heart Sound Labels
 
 This bar chart illustrates the class imbalance within the dataset, where 'normal' heart sounds are significantly more frequent than the other categories.
 
-![Distribution of Heart Sound Labels](images/output-4.png)
+![Distribution of Heart Sound Labels](figures/output-4.png)
 *Figure 2: Distribution of Heart Sound Labels*
 
 ## 3. Preprocessing and Feature Extraction
@@ -164,12 +164,12 @@ These figures were used during the development process for internal diagnostics 
 
 ### Duration Line Plot
 This line plot shows the duration for a small, unspecified subset of the data. It's likely an internal diagnostic plot used during data loading or an early exploration phase.
-![Duration Line Plot](images/output.png)
+![Duration Line Plot](figures/output.png)
 *Figure 3: Duration Line Plot (Diagnostic)*
 
 ### Duration Histogram (Frequency 1.0)
 This histogram likely shows the distribution of durations for a very small subset of data, where each bar (bin) has a frequency of 1.0, suggesting it might represent specific examples or a highly filtered view.
-![Duration Histogram (Frequency 1.0)](images/output-2.png)
+![Duration Histogram (Frequency 1.0)](figures/output-2.png)
 *Figure 4: Duration Histogram (Diagnostic)*
 
 ## References

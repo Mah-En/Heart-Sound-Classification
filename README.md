@@ -41,14 +41,14 @@ Understanding the raw audio data's characteristics is vital for effective prepro
 
 This histogram shows the varying lengths of the heart sound recordings. Most recordings are relatively short, but some extend beyond 20 seconds.
 
-![Distribution of Audio Durations](images/output-3.png)
+![Distribution of Audio Durations](figures/output-3.png)
 *Figure 1: Distribution of Audio Durations*
 
 #### Distribution of Heart Sound Labels
 
 This bar chart illustrates the class imbalance within the dataset, where 'normal' heart sounds are significantly more frequent than the other categories.
 
-![Distribution of Heart Sound Labels](images/output-4.png)
+![Distribution of Heart Sound Labels](figures/output-4.png)
 *Figure 2: Distribution of Heart Sound Labels*
 
 ## 3. Preprocessing and Feature Extraction

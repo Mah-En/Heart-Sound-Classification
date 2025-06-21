@@ -15,11 +15,11 @@ The core task is to build a robust model that can classify heart sound recording
 * **Artifact**: External noise or interference.
 * **Extrasystole**: Premature heartbeats.
 
-[cite_start]The project utilizes the diverse Pascal Heart Sound Dataset [cite: 2, 3, 4][cite_start], which combines recordings from public sources (iStethoscope Pro - Dataset A) and hospital environments (DigiScope - Dataset B). This diverse collection of audio data provides a realistic foundation for training and evaluating a robust classification system.
+[cite_start] The project utilizes the diverse Pascal Heart Sound Dataset [cite: 2, 3, 4][cite_start] , which combines recordings from public sources (iStethoscope Pro - Dataset A) and hospital environments (DigiScope - Dataset B). This diverse collection of audio data provides a realistic foundation for training and evaluating a robust classification system.
 
 ## 2. Dataset Description
 
-[cite_start]The core data for this project is derived from the Pascal Heart Sound Dataset. [cite_start]This dataset is compiled from two main sources: Dataset A, which includes public recordings from the iStethoscope Pro application, and Dataset B, comprising hospital recordings from DigiScope. The combination of these sources provides a diverse and comprehensive collection of heart sound recordings, critical for training a robust classification model.
+[cite_start] The core data for this project is derived from the Pascal Heart Sound Dataset. [cite_start] This dataset is compiled from two main sources: Dataset A, which includes public recordings from the iStethoscope Pro application, and Dataset B, comprising hospital recordings from DigiScope. The combination of these sources provides a diverse and comprehensive collection of heart sound recordings, critical for training a robust classification model.
 
 ### Key Characteristics and Initial Observations
 
@@ -53,73 +53,73 @@ Raw audio signals are high-dimensional and often noisy. The following steps tran
 ### 3.1. Denoising
 
 To remove background noise from the recordings, a wavelet-based denoising technique is applied:
-* [cite_start]**Wavelet Decomposition**: The signal is decomposed into frequency sub-bands using the `db4` wavelet.
-* [cite_start]**Thresholding**: A robust universal threshold (based on median absolute deviation) is used for soft thresholding, suppressing noise coefficients.
-* [cite_start]**Wavelet Reconstruction**: The signal is reconstructed from the thresholded coefficients.
+* [cite_start] **Wavelet Decomposition**: The signal is decomposed into frequency sub-bands using the `db4` wavelet.
+* [cite_start] **Thresholding**: A robust universal threshold (based on median absolute deviation) is used for soft thresholding, suppressing noise coefficients.
+* [cite_start] **Wavelet Reconstruction**: The signal is reconstructed from the thresholded coefficients.
 
 ### 3.2. Resampling
 
-[cite_start]All audio recordings are converted to a consistent sampling rate of 4000 Hz to ensure uniformity and reduce computational load.
+[cite_start] All audio recordings are converted to a consistent sampling rate of 4000 Hz to ensure uniformity and reduce computational load.
 
 ### 3.3. Segmentation and Padding
 
-[cite_start]To meet the fixed input dimension requirements of neural networks:
-* [cite_start]All clips are standardized to a desired length (e.g., 4 seconds).
-* [cite_start]Shorter clips are zero-padded at the end.
-* [cite_start]Longer clips are truncated to the fixed length.
+[cite_start] To meet the fixed input dimension requirements of neural networks:
+* [cite_start] All clips are standardized to a desired length (e.g., 4 seconds).
+* [cite_start] Shorter clips are zero-padded at the end.
+* [cite_start] Longer clips are truncated to the fixed length.
 
 ### 3.4. Feature Extraction: Mel-Frequency Cepstral Coefficients (MFCCs)
 
-[cite_start]MFCCs are widely used in audio processing as they mimic human hearing and efficiently summarize sound characteristics.
-* [cite_start]**MFCC Generation**: For each preprocessed audio signal, 40 MFCCs are computed.
-* [cite_start]**2D Representation**: MFCCs provide a 2D representation (n_mfcc x time_frames), suitable for CNN inputs.
+[cite_start] MFCCs are widely used in audio processing as they mimic human hearing and efficiently summarize sound characteristics.
+* [cite_start] **MFCC Generation**: For each preprocessed audio signal, 40 MFCCs are computed.
+* [cite_start] **2D Representation**: MFCCs provide a 2D representation (n_mfcc x time_frames), suitable for CNN inputs.
 
 ### 3.5. `HeartSoundDataset` Class and `DataLoader`
 
-A custom `HeartSoundDataset` class encapsulates all preprocessing and feature extraction steps. It also handles label encoding (mapping string labels to numerical indices). [cite_start]`torch.utils.data.DataLoader` is used to efficiently batch and shuffle these processed MFCC features and labels for model training.
+A custom `HeartSoundDataset` class encapsulates all preprocessing and feature extraction steps. It also handles label encoding (mapping string labels to numerical indices). [cite_start] `torch.utils.data.DataLoader` is used to efficiently batch and shuffle these processed MFCC features and labels for model training.
 
 ## 4. Data Splitting
 
-[cite_start]The dataset is split into training, validation, and testing sets to ensure robust model evaluation and prevent data leakage:
+[cite_start] The dataset is split into training, validation, and testing sets to ensure robust model evaluation and prevent data leakage:
 
-* [cite_start]**Stratified Split**: `train_test_split` with `stratify` on the `label` column is used to maintain original class proportions in all splits.
-* [cite_start]**Ratios**: The data is split approximately into 60\% training, 20\% validation, and 20\% testing, resulting in 351 train, 117 validation, and 117 test samples.
+* [cite_start] **Stratified Split**: `train_test_split` with `stratify` on the `label` column is used to maintain original class proportions in all splits.
+* [cite_start] **Ratios**: The data is split approximately into 60\% training, 20\% validation, and 20\% testing, resulting in 351 train, 117 validation, and 117 test samples.
 
 ## 5. Model Architectures
 
-[cite_start]The project employs a hybrid CNN-RNN architecture to leverage the strengths of both network types:
+[cite_start] The project employs a hybrid CNN-RNN architecture to leverage the strengths of both network types:
 
-* **CNN Feature Extractor**: Processes 2D MFCC spectrograms to extract spatial (time-frequency) features. [cite_start]It consists of two convolutional layers with batch normalization, ReLU activation, and max pooling, transforming raw MFCCs into a compact feature representation.
+* **CNN Feature Extractor**: Processes 2D MFCC spectrograms to extract spatial (time-frequency) features. [cite_start] It consists of two convolutional layers with batch normalization, ReLU activation, and max pooling, transforming raw MFCCs into a compact feature representation.
 
-* [cite_start]**RNN Classifiers**: Reshaped CNN outputs (sequences of features over time) are fed into various RNN architectures to model temporal dependencies:
+* [cite_start] **RNN Classifiers**: Reshaped CNN outputs (sequences of features over time) are fed into various RNN architectures to model temporal dependencies:
 
-    * [cite_start]**Simple RNN Classifier**: A basic RNN layer. It often struggles with long-term dependencies.
-    * [cite_start]**LSTM Classifier**: Utilizes `nn.LSTM` with gate mechanisms to better capture long-term dependencies. Supports `bidirectional` processing.
-    * [cite_start]**Bi-LSTM (Bidirectional LSTM)**: Processes sequences in both forward and backward directions, concatenating outputs for richer contextual understanding.
-    * [cite_start]**GRU Classifier**: A simplified LSTM (`nn.GRU`) with fewer parameters.
-    * [cite_start]**xLSTM Classifier (Conceptual Placeholder)**: Implemented as a standard LSTM in this project; a full xLSTM would integrate more advanced features (e.g., attention, residual connections, novel gating) for enhanced capabilities.
+    * [cite_start] **Simple RNN Classifier**: A basic RNN layer. It often struggles with long-term dependencies.
+    * [cite_start] **LSTM Classifier**: Utilizes `nn.LSTM` with gate mechanisms to better capture long-term dependencies. Supports `bidirectional` processing.
+    * [cite_start] **Bi-LSTM (Bidirectional LSTM)**: Processes sequences in both forward and backward directions, concatenating outputs for richer contextual understanding.
+    * [cite_start] **GRU Classifier**: A simplified LSTM (`nn.GRU`) with fewer parameters.
+    * [cite_start] **xLSTM Classifier (Conceptual Placeholder)**: Implemented as a standard LSTM in this project; a full xLSTM would integrate more advanced features (e.g., attention, residual connections, novel gating) for enhanced capabilities.
 
-* **Attention Mechanism**: A soft attention layer is integrated into the LSTM classifier (`LSTMAttentionClassifier`). [cite_start]This mechanism dynamically assigns weights to different time segments of the MFCC sequence, allowing the model to focus on the most salient parts of the heart sound for classification. [cite_start]This improves both accuracy and offers a degree of interpretability.
+* **Attention Mechanism**: A soft attention layer is integrated into the LSTM classifier (`LSTMAttentionClassifier`). [cite_start] This mechanism dynamically assigns weights to different time segments of the MFCC sequence, allowing the model to focus on the most salient parts of the heart sound for classification. [cite_start] This improves both accuracy and offers a degree of interpretability.
 
 ## 6. Training and Evaluation Utilities
 
-[cite_start]Standardized functions ensure a structured training and evaluation process:
+[cite_start] Standardized functions ensure a structured training and evaluation process:
 
 * **`train_model` Function**:
     * Models are moved to the appropriate device (CPU/GPU).
-    * [cite_start]Uses `nn.CrossEntropyLoss` for multi-class classification.
-    * [cite_start]Employs the `Adam` optimizer with an initial learning rate of `1e-3`.
+    * [cite_start] Uses `nn.CrossEntropyLoss` for multi-class classification.
+    * [cite_start] Employs the `Adam` optimizer with an initial learning rate of `1e-3`.
     * Manages the training loop, performing backpropagation and optimizer steps.
-    * [cite_start]Performs validation after each epoch, computing validation accuracy.
+    * [cite_start] Performs validation after each epoch, computing validation accuracy.
 
 * **`evaluate_model` Function**:
     * Sets the model to evaluation mode (`model.eval()`).
-    * [cite_start]Collects predictions and true labels.
-    * [cite_start]Prints overall **Accuracy**, a detailed **Classification Report** (precision, recall, F1-score for each class), and a **Confusion Matrix**.
+    * [cite_start] Collects predictions and true labels.
+    * [cite_start] Prints overall **Accuracy**, a detailed **Classification Report** (precision, recall, F1-score for each class), and a **Confusion Matrix**.
 
 ## 7. Results
 
-The various CNN-RNN hybrid models were trained for 10 epochs. [cite_start]Their performance on the unseen test set is summarized below:
+The various CNN-RNN hybrid models were trained for 10 epochs. [cite_start] Their performance on the unseen test set is summarized below:
 
 ### Overall Test Accuracy
 
@@ -132,31 +132,31 @@ The various CNN-RNN hybrid models were trained for 10 epochs. [cite_start]Their 
 | CNN + GRU                   | 0.6581        |
 | **CNN + LSTM + Attention** | **0.6752** |
 
-[cite_start]The Bi-LSTM model achieved the highest overall accuracy, closely followed by the LSTM with Attention model.
+[cite_start] The Bi-LSTM model achieved the highest overall accuracy, closely followed by the LSTM with Attention model.
 
 ### Detailed Performance Analysis
 
 * **Simple RNN**: Showed high recall for the majority 'normal' class but completely failed on minority classes (e.g., 'extrahls' and 'extrasystole').
-* [cite_start]**LSTM/GRU**: Achieved slight improvements, but still struggled significantly with the smallest minority classes.
-* [cite_start]**Bi-LSTM**: Demonstrated notable improvement in classifying 'artifact' and was the best overall performer.
+* [cite_start] **LSTM/GRU**: Achieved slight improvements, but still struggled significantly with the smallest minority classes.
+* [cite_start] **Bi-LSTM**: Demonstrated notable improvement in classifying 'artifact' and was the best overall performer.
 * **LSTM + Attention**: Also significantly improved 'artifact' classification and achieved very competitive overall accuracy.
 
 ## 8. Discussion
 
-* [cite_start]**Superiority of Gated RNNs**: LSTM and GRU models significantly outperformed Simple RNN, affirming their ability to capture long-term dependencies.
-* [cite_start]**Bi-LSTM's Contextual Power**: Its top performance highlights the importance of bidirectional context for accurate heart sound diagnosis.
+* [cite_start] **Superiority of Gated RNNs**: LSTM and GRU models significantly outperformed Simple RNN, affirming their ability to capture long-term dependencies.
+* [cite_start] **Bi-LSTM's Contextual Power**: Its top performance highlights the importance of bidirectional context for accurate heart sound diagnosis.
 * **Attention Mechanism's Role**: Attention notably improved accuracy and offers potential for model interpretability by highlighting important audio segments.
-* [cite_start]**Persistent Class Imbalance**: All models struggled with minority classes, exhibiting bias towards the majority 'normal' class.
+* [cite_start] **Persistent Class Imbalance**: All models struggled with minority classes, exhibiting bias towards the majority 'normal' class.
 
 ## 9. Future Work
 
-* [cite_start]**Addressing Class Imbalance**: Implement techniques like oversampling, weighted loss functions, or generative models (GANs/VAEs) to synthesize data for underrepresented classes.
+* [cite_start] **Addressing Class Imbalance**: Implement techniques like oversampling, weighted loss functions, or generative models (GANs/VAEs) to synthesize data for underrepresented classes.
 * **Advanced Model Architectures**: Explore deeper CNNs/RNNs, Transformer networks, or hierarchical classification systems.
-* [cite_start]**Feature Engineering Refinement**: Investigate additional audio features or learnable feature extractors.
-* [cite_start]**Hyperparameter Optimization**: Conduct more extensive hyperparameter tuning.
+* [cite_start] **Feature Engineering Refinement**: Investigate additional audio features or learnable feature extractors.
+* [cite_start] **Hyperparameter Optimization**: Conduct more extensive hyperparameter tuning.
 * **Ensemble Methods**: Combine predictions from multiple best-performing models.
-* [cite_start]**Interpretability**: Further explore attention weight visualization for clinical insights.
-* [cite_start]**Data Augmentation for Audio**: Implement domain-specific audio augmentation.
+* [cite_start] **Interpretability**: Further explore attention weight visualization for clinical insights.
+* [cite_start] **Data Augmentation for Audio**: Implement domain-specific audio augmentation.
 
 ## 10. Intermediate Visualizations
 
